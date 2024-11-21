@@ -1,6 +1,5 @@
 from class_files.NotesClass import Note
 
-
 class Project:
     def __init__(self):
         self.notes = []

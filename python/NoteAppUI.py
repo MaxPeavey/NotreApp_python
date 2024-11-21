@@ -7,6 +7,7 @@ import json
 from class_files.NotesClass import Note
 from class_files.ProjectClass import Project
 from class_files.ProjectMngClass import ProjectManager
+from class_files.About import About
 
 class NotesApp:
     def __init__(self, root):
@@ -20,18 +21,26 @@ class NotesApp:
 
         # Проверка на наличие project.json и загрузка данных, если файл существует
         if os.path.exists(self.manager.file_path):
+            print(f"{self.manager.file_path} путь к файлу\n")
             self.manager.load_project()
 
         # Интерфейс
         self.create_ui()
 
     def create_ui(self):
+        #Верхний фрейм
+        top_frame=tk.Frame(self.root)
+        top_frame.pack(side=tk.TOP, fill=tk.X,)
+
+        about_button=tk.Button(top_frame, text="About", command=self.About_window)
+        about_button.pack(side=tk.LEFT, padx=5, pady=5)
+
         # Левый фрейм для списка файлов
         left_frame = tk.Frame(self.root)
-        left_frame.pack(side=tk.LEFT, fill=tk.Y)
+        left_frame.pack(side=tk.LEFT, fill=tk.Y,after=top_frame)
 
         self.notes_listbox = tk.Listbox(left_frame, width=40)
-        self.notes_listbox.pack(side=tk.LEFT, fill=tk.Y, padx=5, pady=5)
+        self.notes_listbox.pack(fill=tk.Y, padx=5, pady=5,expand=True)
         self.notes_listbox.bind('<<ListboxSelect>>', self.display_note_content)
 
         # Правый фрейм для отображения содержимого заметки
@@ -42,20 +51,29 @@ class NotesApp:
         self.content_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
         # Нижняя панель с кнопками
-        bottom_frame = tk.Frame(self.root)
+        bottom_frame = tk.Frame(left_frame)
         bottom_frame.pack(side=tk.BOTTOM, fill=tk.X)
 
         add_button = tk.Button(bottom_frame, text="+", command=self.create_note)
-        add_button.pack(side=tk.LEFT, padx=5, pady=5)
+        add_button.pack(side=tk.RIGHT, padx=5, pady=5)
 
         delete_button = tk.Button(bottom_frame, text="-", command=self.delete_note)
-        delete_button.pack(side=tk.LEFT, padx=5, pady=5)
+        delete_button.pack(side=tk.RIGHT, padx=5, pady=5)
 
-        edit_button = tk.Button(bottom_frame, text="✎", command=self.edit_note)
-        edit_button.pack(side=tk.LEFT, padx=5, pady=5)
+        edit_button = tk.Button(top_frame, text="✎", command=self.edit_note)
+        edit_button.pack(side=tk.RIGHT, padx=5, pady=5)
 
         # Загрузить список заметок
         self.load_notes_list()
+
+        #О программе (Окно)
+    def About_window(self):
+        About_window= tk.Toplevel(self.root)
+        About_window.geometry("250x120")
+        About_window.resizable(False,False)
+        About_window.title("O приложение")
+        tk.Label(About_window, text="NoteApp",font=("Impact", 20, "bold"),justify="center" ).pack()
+        tk.Label(About_window, text=f"Автор: {info.author}\n v{info.version}\n {info.email}\n {info.gihub}",justify="left").pack(side=tk.LEFT,padx=5)
 
     def load_notes_list(self):
         self.notes_listbox.delete(0, tk.END)
@@ -148,6 +166,7 @@ class NotesApp:
 
 # Запуск приложения
 if __name__ == "__main__":
+    info=About("Max Peavey","0.8.0 Beta","123@mail.ru","12345/git")
     root = tk.Tk()
     app = NotesApp(root)
     root.mainloop()
