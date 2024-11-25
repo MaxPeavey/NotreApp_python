@@ -1,3 +1,5 @@
+import json
+from datetime import datetime
 from class_files.NotesClass import Note
 
 class Project:
@@ -17,12 +19,19 @@ class Project:
         return None
 
     def to_list(self):
+        # Преобразует список объектов Note в список словарей, пригодных для JSON
         return [note.to_dict() for note in self.notes]
 
-    @classmethod
-    def from_list(cls, notes_list):
-        project = cls()
-        for note_data in notes_list:
-            note = Note.from_dict(note_data)
+    @staticmethod
+    def from_json(json_data):
+        project = Project()
+        for item in json_data:
+            note = Note(
+                title=item['title'],
+                category=item['category'],
+                content=item['content'],
+                creation_time=datetime.strptime(item['creation_time'], '%Y-%m-%d %H:%M:%S'),
+                modification_time=datetime.strptime(item['modification_time'], '%Y-%m-%d %H:%M:%S')
+            )
             project.add_note(note)
         return project

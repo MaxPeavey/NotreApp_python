@@ -2,7 +2,6 @@ import json
 import os
 from class_files.ProjectClass import Project
 
-
 class ProjectManager:
     def __init__(self, project, folder_path):
         self.project = project
@@ -12,16 +11,25 @@ class ProjectManager:
         self.file_path = os.path.join(folder_path, "project.json")
 
     def save_project(self):
-        with open(self.file_path, 'w', encoding='utf-8') as file:
-            json.dump(self.project.to_list(), file, ensure_ascii=False, indent=4)
-
-    # В функции load_project проверка на наличие файла
-    def load_project(self):
-        if os.path.exists(self.file_path):  # Проверка, существует ли файл project.json
-            print(f"Путь к файлу {self.file_path} существует")
+        # Открываем файл для чтения существующих данных
+        existing_notes = []
+        if os.path.exists(self.file_path):
             with open(self.file_path, 'r', encoding='utf-8') as file:
-                notes_list = json.load(file)
-                self.project = Project.from_list(notes_list)
-        else:        
-            print(f"Путь к файлу {self.file_path} НЕ существует")
-                
+                try:
+                    existing_notes = json.load(file)
+                except json.JSONDecodeError:
+                    print("Ошибка при чтении JSON-файла. Возможно, файл поврежден.")
+        
+        # Сохраняем только уникальные заметки, чтобы не дублировать
+        new_notes = self.project.to_list()
+        combined_notes = self._merge_notes(existing_notes, new_notes)
+
+        # Перезаписываем файл с обновленными данными
+        with open(self.file_path, 'w', encoding='utf-8') as file:
+            json.dump(combined_notes, file, ensure_ascii=False, indent=4)
+
+    def _merge_notes(self, existing_notes, new_notes):
+        # Метод для слияния существующих и новых заметок без дублирования
+        existing_titles = {note['title'] for note in existing_notes}
+        merged_notes = existing_notes + [note for note in new_notes if note['title'] not in existing_titles]
+        return merged_notes
