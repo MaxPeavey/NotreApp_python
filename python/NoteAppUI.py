@@ -40,11 +40,10 @@ class NotesApp:
 
         # Создаем менеджер проекта
         self.manager = ProjectManager(self.project, self.notes_folder)
-        
         # Создаем интерфейс
         self.create_ui()
 
-        self.root.after(5000, self.schedule_save)
+        
         # Добавляем обработчик завершения программы
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
@@ -54,8 +53,12 @@ class NotesApp:
         top_frame.pack(side=tk.TOP, fill=tk.X)
 
         about_button = tk.Button(top_frame, text="About", command=self.About_window)
-        about_button.pack(side=tk.LEFT, padx=5, pady=5)
-
+        about_button.pack(side=tk.RIGHT)
+        tk.Label(top_frame, text="Категория:").pack(side=tk.LEFT)
+        self.category_choice = ttk.Combobox(top_frame, values=["Все","Работа", "Учеба", "Личное"], state="readonly")
+        self.category_choice.pack(pady=5,side=tk.LEFT)
+        self.category_choice.current(0)
+        self.category_choice.bind('<<ComboboxSelected>>', self.filter_notes)
         # Левый фрейм для списка заметок
         left_frame = tk.Frame(self.root)
         left_frame.pack(side=tk.LEFT, fill=tk.Y, after=top_frame)
@@ -101,6 +104,8 @@ class NotesApp:
         self.notes_listbox.delete(0, tk.END)
         for note in self.project.notes:
             self.notes_listbox.insert(tk.END, note.title)
+        self.filter_notes()
+        self.schedule_save()
 
     def display_note_content(self, event):
         # Отображаем содержимое выбранной заметки
@@ -116,33 +121,37 @@ class NotesApp:
                 self.content_text.insert(tk.END, note.content)
 
     def create_note_window(self, note=None):
-        # Окно для создания или редактирования заметки
         def save_note():
             title = title_entry.get()[:50] or "Без названия"
+            unique_title = self.project.get_unique_title(title)
             category = category_combobox.get()
             content = content_text.get(1.0, tk.END).strip()
-            
+
             if note:
-                # Используем метод update_content вместо несуществующего update
-                note.update_content(title=title, category=category, content=content)
+                # Прямое обновление полей заметки
+                note.title = unique_title
+                note.category = category
+                note.content = content
+                note.modification_time = datetime.now()  # Обновляем время модификации
             else:
-                new_note = Note(title=title, category=category, content=content)
+                new_note = Note(title=unique_title, category=category, content=content)
                 self.project.add_note(new_note)
-            
+
             self.manager.save_project()
             self.load_notes_list()
             note_window.destroy()
 
+
         note_window = tk.Toplevel(self.root)
         note_window.title("Создание/Редактирование заметки")
 
-        # Поле для названия
+    # Поле для названия
         tk.Label(note_window, text="Название:").pack()
         title_entry = tk.Entry(note_window, width=50)
         title_entry.pack(pady=5)
         if note:
             title_entry.insert(0, note.title)
-
+        
         # Поле для даты создания
         creation_time_label = tk.Label(note_window, text=f"Дата создания: {note.creation_time if note else datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         creation_time_label.pack(pady=5)
@@ -154,9 +163,9 @@ class NotesApp:
 
         # Поле для выбора категории
         tk.Label(note_window, text="Категория:").pack()
-        category_combobox = ttk.Combobox(note_window, values=["работа", "учеба", "личное"], state="readonly")
+        category_combobox = ttk.Combobox(note_window, values=["Работа", "Учеба", "Личное"], state="readonly")
         category_combobox.pack(pady=5)
-        category_combobox.set(note.category if note else "личное")
+        category_combobox.set(note.category if note else "Личное")
 
         # Поле для текста заметки
         tk.Label(note_window, text="Текст заметки:").pack()
@@ -164,7 +173,7 @@ class NotesApp:
         content_text.pack(fill=tk.BOTH, padx=5, pady=5)
         if note:
             content_text.insert(tk.END, note.content)
-
+        
         # Кнопка Сохранить
         save_button = tk.Button(note_window, text="Сохранить", command=save_note)
         save_button.pack(pady=5)
@@ -199,6 +208,15 @@ class NotesApp:
         with open(project_path, 'w', encoding='utf-8') as file:
             json.dump(self.project.to_list(), file, ensure_ascii=False, indent=4)
         self.root.destroy()
+
+    def filter_notes(self, event=None):
+        selected_category = self.category_choice.get()
+        # Очистить список заметок в Listbox
+        self.notes_listbox.delete(0, tk.END)
+        # Фильтруем заметки по выбранной категории
+        for note in self.project.notes:
+            if selected_category == "Все" or note.category == selected_category:
+                self.notes_listbox.insert(tk.END, note.title)
 
 # Запуск приложения
 if __name__ == "__main__":
