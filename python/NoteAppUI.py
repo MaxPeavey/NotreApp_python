@@ -220,7 +220,7 @@ class NotesApp:
 
 # Запуск приложения
 if __name__ == "__main__":
-    info = About("Max Peavey", "0.8.0 Beta", "123@mail.ru", "12345/git")
+    info = About("Max Peavey", "0.8.0 Beta", "123@mail.ru", "https://github.com/MaxPeavey/NotreApp_python")
     root = tk.Tk()
     app = NotesApp(root)
     root.mainloop()
