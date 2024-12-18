@@ -52,7 +52,7 @@ class NotesApp:
         top_frame = tk.Frame(self.root)
         top_frame.pack(side=tk.TOP, fill=tk.X)
 
-        about_button = tk.Button(top_frame, text="About", command=self.About_window)
+        about_button = tk.Button(top_frame, text="Инфо", command=self.About_window)
         about_button.pack(side=tk.RIGHT)
         tk.Label(top_frame, text="Категория:").pack(side=tk.LEFT)
         self.category_choice = ttk.Combobox(top_frame, values=["Все","Работа", "Учеба", "Личное"], state="readonly")
@@ -93,14 +93,14 @@ class NotesApp:
     def About_window(self):
         # Окно "О программе"
         About_window = tk.Toplevel(self.root)
-        About_window.geometry("250x120")
+        About_window.geometry("350x120")
         About_window.resizable(False, False)
         About_window.title("О приложении")
         tk.Label(About_window, text="NoteApp", font=("Impact", 20, "bold"), justify="center").pack()
         tk.Label(About_window, text=f"Автор: {info.author}\n v{info.version}\n {info.email}\n {info.gihub}", justify="left").pack(side=tk.LEFT, padx=5)
 
     def load_notes_list(self):
-        # Загружаем заметки в список GUI
+        # Загружаем заметки в список 
         self.notes_listbox.delete(0, tk.END)
         for note in self.project.notes:
             self.notes_listbox.insert(tk.END, note.title)
@@ -128,7 +128,6 @@ class NotesApp:
             content = content_text.get(1.0, tk.END).strip()
 
             if note:
-                # Прямое обновление полей заметки
                 note.title = unique_title
                 note.category = category
                 note.content = content
@@ -156,7 +155,7 @@ class NotesApp:
         creation_time_label = tk.Label(note_window, text=f"Дата создания: {note.creation_time if note else datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         creation_time_label.pack(pady=5)
 
-        # Поле для даты модификации (если редактируется)
+        # Поле для даты модификации
         if note:
             modification_time_label = tk.Label(note_window, text=f"Дата модификации: {note.modification_time}")
             modification_time_label.pack(pady=5)

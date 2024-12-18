@@ -19,7 +19,7 @@ class Project:
         return None
 
     def to_list(self):
-        # Преобразует список объектов Note в список словарей, пригодных для JSON
+        #  Note список в JSON
         return [note.to_dict() for note in self.notes]
     
     def get_unique_title(self, title):
